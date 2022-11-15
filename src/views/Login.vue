@@ -258,7 +258,7 @@ export default {
                     }).then(res => {
                         Message.success('登录成功')
                         localStorage.setItem('token', res.token)
-                        this.$router.go('/home')
+                        window.location.href = '/home'
                         return
                     }).catch(err => {
                         this.loadCaptchaCode()
