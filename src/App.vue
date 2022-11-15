@@ -43,6 +43,7 @@
 
         .header-btn {
             margin: 0 10px;
+
             a {
                 color: #000000;
                 text-decoration: none;
@@ -78,6 +79,7 @@
             font-size: 18px;
             border-right: 1px solid #9fb3c8;
             cursor: pointer;
+
             a {
                 text-decoration: none;
                 color: #f0f4f8;
@@ -113,7 +115,9 @@
                 <el-col :span="3"></el-col>
                 <el-col :span="9">
                     <div v-if="isLogin" class="header-nav">
-                        <el-button type="primary" plain @click="getMe" class="header-btn">我的</el-button>
+                        <el-button type="primary" plain @click="getMe" class="header-btn">
+                            <i class="el-icon-user el-icon--left"></i>我的
+                        </el-button>
                         <el-dialog title="个人资料" :visible.sync="dialogFormVisible">
                             <el-form :model="form">
                                 <el-form-item label="邮箱" :label-width="formLabelWidth">
@@ -131,12 +135,24 @@
                                 <el-button type="primary" @click="updateMe">确 定</el-button>
                             </div>
                         </el-dialog>
-                        <el-button type="danger" plain @click="dialogVisible = true" class="header-btn">退出</el-button>
+                        <el-button type="warning" plain @click="dialogVisible = true" class="header-btn">
+                            <i class="el-icon-warning-outline el-icon--left"></i>退出
+                        </el-button>
                         <el-dialog title="提示" :visible.sync="dialogVisible" width="30%">
-                            <span>真的要登录账号?</span>
+                            <span>真的要退出账号?</span>
                             <span slot="footer" class="dialog-footer">
                                 <el-button @click="dialogVisible = false">取 消</el-button>
                                 <el-button type="primary" @click="logout">确 定</el-button>
+                            </span><span solt="footer"></span>
+                        </el-dialog>
+                        <el-button type="danger" plain @click="dialogRemove = true" class="header-btn">
+                            <i class="el-icon-delete el-icon--left"></i>注销
+                        </el-button>
+                        <el-dialog title="提示" :visible.sync="dialogRemove" width="30%">
+                            <span>账号注销后，当前账号下的所有平台账号数据将全部删除</span>
+                            <span slot="footer" class="dialog-footer">
+                                <el-button @click="dialogRemove = false">取 消</el-button>
+                                <el-button type="primary" @click="removeAccount">确 定</el-button>
                             </span><span solt="footer"></span>
                         </el-dialog>
                     </div>
@@ -211,14 +227,15 @@ export default {
                 real_name: ''
             },
             formLabelWidth: '120px',
-            dialogVisible: false
+            dialogVisible: false,
+            dialogRemove: false,
         };
     },
     provide() {
         return {
             reload: this.reload,
         }
-    },
+    }, 
     methods: {
         reload() {
             this.isRouterAlive = false
@@ -246,8 +263,21 @@ export default {
         },
         logout() {
             localStorage.remove('token')
+            this.isLogin = false
             this.dialogVisible = false
             this.$router.push('/login')
+        },
+        removeAccount() {
+            request({
+                url: '/auth/logout',
+                method: 'delete'
+            }).then(res => {
+                this.dialogRemove = false
+                this.isLogin = false
+                Message.success(res.message)
+                localStorage.remove('token')
+                this.$router.push('/login')
+            })
         }
     },
 }

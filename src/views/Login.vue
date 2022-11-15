@@ -18,6 +18,7 @@
         height: 100%;
         width: 100%;
         border-radius: 50%;
+
         &:hover {
             transform: scaleX(-1);
         }
@@ -99,7 +100,34 @@
                                 <router-link to="/register">注册账号</router-link>
                             </div>
                             <div class="login-footer-content">
-                                <router-link to="/email">忘记密码</router-link>
+                                <el-button type="text" @click="dialogForgetPassword = true">忘记密码</el-button>
+                                <el-dialog title="忘记密码" :visible.sync="dialogForgetPassword">
+                                    <el-form :model="passwordForm" :rules="passwordRules">
+                                        <el-form-item label="邮箱" prop="email">
+                                            <el-input v-model="passwordForm.email" autocomplete="off"
+                                                placeholder="请输入邮箱"></el-input>
+                                        </el-form-item>
+                                        <el-form-item label="验证码" prop="code">
+                                            <el-input v-model="passwordForm.code" autocomplete="off"
+                                                placeholder="请输入验证码, 区分大小写">
+                                                <el-button slot="append" icon="el-icon-message" @click="sendEmail">
+                                                </el-button>
+                                            </el-input>
+                                        </el-form-item>
+                                        <el-form-item label="新密码" prop="password">
+                                            <el-input v-model="passwordForm.password" autocomplete="off" show-password
+                                                placeholder="请输入密码"></el-input>
+                                        </el-form-item>
+                                        <el-form-item label="确认密码" prop="confirmPassword">
+                                            <el-input v-model="passwordForm.confirmPassword" autocomplete="off"
+                                                show-password placeholder=重复密码></el-input>
+                                        </el-form-item>
+                                    </el-form>
+                                    <div slot="footer" class="dialog-footer">
+                                        <el-button @click="dialogForgetPassword = false">取 消</el-button>
+                                        <el-button type="primary" @click="resetPassword">确 定</el-button>
+                                    </div>
+                                </el-dialog>
                             </div>
                         </div>
                     </el-form>
@@ -177,6 +205,32 @@ export default {
                 ],
                 captcha: [
                     { validator: validateCaptchaCode, trigger: 'blur' }
+                ],
+
+            },
+            dialogForgetPassword: false,
+            passwordForm: {
+                email: '',
+                code: '',
+                password: '',
+                confirmPassword: ''
+            },
+            passwordRules: {
+                email: [
+                    { required: true, message: '请输入邮箱', trigger: 'blur' },
+                    { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
+                ],
+                code: [
+                    { required: true, message: '请输入验证码', trigger: 'blur' },
+                    { min: 6, max: 6, message: '验证码必须为6位', trigger: 'blur' }
+                ],
+                password: [
+                    { required: true, message: '请输入密码', trigger: 'blur' },
+                    { min: 6, message: '密码长度不能小于6位', trigger: 'blur' }
+                ],
+                confirmPassword: [
+                    { required: true, message: '请再次输入密码', trigger: 'blur' },
+                    { min: 6, message: '密码长度不能小于6位', trigger: 'blur' }
                 ]
             }
         }
@@ -197,14 +251,14 @@ export default {
                 if (valid) {
                     // 登录
                     login({
-                        user_name : this.ruleForm.name,
-                        password : this.ruleForm.pass,
-                        captcha_id : this.captchaId,
-                        captcha : this.ruleForm.captcha
+                        user_name: this.ruleForm.name,
+                        password: this.ruleForm.pass,
+                        captcha_id: this.captchaId,
+                        captcha: this.ruleForm.captcha
                     }).then(res => {
                         Message.success('登录成功')
                         localStorage.setItem('token', res.token)
-                        this.$router.push('/home')
+                        this.$router.go('/home')
                         return
                     }).catch(err => {
                         this.loadCaptchaCode()
@@ -219,7 +273,46 @@ export default {
                     return false;
                 }
             })
-        }
+        },
+        sendEmail() {
+            if (!this.passwordForm.email) {
+                Message({
+                    message: '请输入邮箱',
+                    type: 'error',
+                    duration: 5 * 1000
+                })
+                return
+            }
+            request({
+                url: '/email',
+                method: 'put',
+                data: {
+                    email: this.passwordForm.email,
+                    type: 'password'
+                }
+            }).then(res => {
+                Message.success(res)
+            }).catch(err => {
+                Message.error('发送失败')
+            })
+        },
+        resetPassword() {
+            request({
+                url: '/password',
+                method: 'post',
+                data: {
+                    email: this.passwordForm.email,
+                    code: this.passwordForm.code,
+                    password: this.passwordForm.password,
+                    re_password: this.passwordForm.confirmPassword
+                }
+            }).then(res => {
+                Message.success(res)
+                this.dialogForgetPassword = false
+            }).catch(err => {
+                Message.error('重置失败')
+            })
+        },
     }
 }
 </script>

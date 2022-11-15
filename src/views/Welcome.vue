@@ -81,7 +81,7 @@
                         <p>存储和使用您密码管理器</p>
                         <div v-if="isLogin">
                             <el-button type="primary" plain class="btn">
-                                <router-link to="/home">进入</router-link>
+                                <router-link to="/home" style="width:100%;height:100%">进入</router-link>
                             </el-button>
                         </div>
                         <div v-else>
@@ -130,8 +130,11 @@ import localStorage from '../utils/storage'
 export default {
     data() {
         return {
-            isLogin: localStorage.get('token') ? true : false,
+            isLogin: false
         }
     },
+    mounted() {
+        this.isLogin = localStorage.get('token') ? true : false
+    }
 }
 </script>
