@@ -3,7 +3,6 @@ import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
-import Me from '../views/Me.vue'
 import Welcome from '../views/welcome.vue'
 
 
@@ -29,12 +28,7 @@ const routes = [
         path: '/register',
         name: 'register',
         component: Register
-    },
-    {
-        path: 'me',
-        name: 'me',
-        component: Me
-    }
+    }, 
 ]
 
 const router = new VueRouter({
